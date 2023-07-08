@@ -2,6 +2,7 @@
 ### 环境条件
 - JDK17
 - Springboot 2.7 参考顶层文档
+- docker
 - EMQX 服务器搭建
 
 ### EMQX服务器搭建
@@ -16,4 +17,5 @@ docker run -itd \
 
 windows：[Windows | EMQX 5.0 文档](https://www.emqx.io/docs/zh/v5.0/deploy/install-windows.html)
 
-### Springboot集成介绍
+### Springboot集成MQTT简要介绍
+[掘金](https://juejin.cn/post/7253083041609629756)
