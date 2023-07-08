@@ -17,13 +17,14 @@
     <modules>
         <module>minio-spring-boot-study</module>
         <module>security-spring-boot-study</module>
+        <module>websocket-spring-boot-study</module>
+        <module>mqtt-spring-boot-study</module>
     </modules>
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <spring.cloud.alibaba.version>2021.0.4.0</spring.cloud.alibaba.version>
-        <!--        <spring.cloud.version>Hoxton.SR12</spring.cloud.version>-->
         <spring.cloud.version>2021.0.5</spring.cloud.version>
     </properties>
     <dependencyManagement>
@@ -41,6 +42,11 @@
                 <version>${spring.cloud.alibaba.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.projectlombok</groupId>
+                <artifactId>lombok</artifactId>
+                <version>1.18.26</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

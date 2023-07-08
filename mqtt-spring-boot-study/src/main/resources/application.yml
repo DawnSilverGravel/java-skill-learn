@@ -1,0 +1,16 @@
+server:
+  port: 8899
+mqtt:
+  broker: tcp://localhost:1883
+  username: admin
+  password: public
+  client-id: blessing-client
+  integration-client-id: gravel-client
+  qos-list:
+    - 2
+    - 2
+    - 2
+  topics:
+    - blessing
+    - star
+    - gravel
