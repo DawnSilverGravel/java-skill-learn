@@ -19,6 +19,7 @@
         <module>security-spring-boot-study</module>
         <module>websocket-spring-boot-study</module>
         <module>mqtt-spring-boot-study</module>
+        <module>redis-spring-boot-study</module>
     </modules>
     <properties>
         <maven.compiler.source>17</maven.compiler.source>

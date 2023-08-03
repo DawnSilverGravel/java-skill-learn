@@ -1,4 +1,10 @@
-#spring:
-#  security:
-#    user:
-#      password: 123
+spring:
+  security:
+    # 如果配置了 UserDetailsService Beam，该配置失效
+    user:
+      name: DawnSilverGravel
+      password: DawnSilverGravel
+      roles:
+        - DawnSilverGravel
+        - ADMIN
+        - USER

@@ -1,6 +1,7 @@
 package com.silvergravel.spring.config;
 
 import com.silvergravel.spring.handler.MyWebsocketHandler;
+import com.silvergravel.spring.interceptor.MyHandshakeInterceptor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.socket.WebSocketHandler;

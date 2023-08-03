@@ -1,8 +1,0 @@
-minio:
-  init-buckets:
-    - dawn-silver-gravel
-    - blessing-star
-  operation-bucket: dawn-star
-  access-key: 3wyR76HN6T3hMA7N93Ai
-  secret-key: Q2j1vOfKaPOWPAHyBvKGMyQuKpV0I5YaUrZzpXyi
-  endpoint: http://121.37.169.253:9000
