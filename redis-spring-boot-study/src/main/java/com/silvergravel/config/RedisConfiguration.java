@@ -35,7 +35,6 @@ public class RedisConfiguration {
     }
 
 
-
     @Bean
     public RedisConnectionFactory jedisConnectionFactory() {
         RedisStandaloneConfiguration redisStandaloneConfiguration = new RedisStandaloneConfiguration();
@@ -68,7 +67,5 @@ public class RedisConfiguration {
         redisTemplate.setConnectionFactory(jedisConnectionFactory());
         return redisTemplate;
     }
-
-
 
 }

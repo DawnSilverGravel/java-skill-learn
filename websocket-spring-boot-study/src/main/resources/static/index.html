@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Websocket聊天室</title>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+</head>
+<body>
+<div style="margin: 10px auto;height: 5px;"></div>
+
+<div id="app" style="display:flex;flex-wrap:wrap;position: relative;z-index: 0;">
+
+    <div style="position: relative;z-index: 2;margin: 0 auto;">
+        <div :class="[alertMessage.type!=='none'?'show-tips':'hidden-tips','alert-tips',alertMessage.type]">
+            <p style="margin: auto;">
+                {{alertMessage.content}}
+            </p>
+        </div>
+
+
+        <div style="text-align: center; vertical-align:middle;width: 100%;">
+            <input v-model="username" placeholder="input username" :readonly="isReadonly"/>
+            &nbsp;
+            <input type="radio" id="servlet" value="servlet" v-model="path"/>
+            <label for="servlet">servlet</label>
+
+            <input type="radio" id="spring" value="spring" v-model="path"/>
+            <label for="spring">spring</label>
+
+            <input type="radio" id="netty" value="netty" v-model="path"/>
+            <label for="netty">netty</label>
+
+            <input type="radio" id="stomp" value="stomp" v-model="path"/>
+            <label for="stomp">stomp</label>
+            &nbsp;&nbsp;
+            <button @click="connection" :class="{button: !isReadonly,'disable-button': isReadonly}"
+                    :disabled="isReadonly">连
+                接
+            </button>
+            &nbsp;&nbsp;
+            <button @click="exit" :class="{button: isReadonly,'disable-button': !isReadonly}" :disabled="!isReadonly"
+                    type="text">退 出
+            </button>
+        </div>
+        <!-- </div> -->
+        <div style="margin: 20px auto;">
+        </div>
+        <!-- 左边显示栏 -->
+        <div class="sidebar border-style">
+            <div v-for="(user,index) in users" style="text-align: center;" :key="index">
+                <span @click="showName(user.username,user.type),updateActiveIndex(index)" class="user-item"
+                      :class="{'user-item-active':activeIndex==index}">{{user.username}}<span
+                        :class="{tips: redTips[index]}"></span></span>
+
+            </div>
+        </div>
+
+        <div style="float: left;width: 653px;height: 606px;" class="border-style">
+            <!-- 右边主页头 -->
+            <div style="text-align: center;height: 30px;" class="border-style">{{tabUserName}}</div>
+            <!-- 滑板显示内容 -->
+            <div class="border-style contentDialog">
+                <div v-for="(message,index) in messageDialog" :key="index">
+                    <div style="width: 100%;">
+                        <span :style="{float: message.position, 'text-align': message.position}"
+                              class="content">{{message.content}}</span>
+                        <div style="clear: both;"></div>
+                    </div>
+
+                </div>
+            </div>
+            <!-- 输入的数据 -->
+            <div style="height: 200px;" class="border-style">
+                <div>
+                        <textarea v-model="message" class="textarea"></textarea>
+                </div>
+                <div>
+                    <div style="float: right;">
+                        <button style="width: 80px;height: 35px;border-width: 0px;" class="button"
+                                @click="sendMessage">发 送
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
+<style>
+    .sidebar {
+        float: left;
+        width: 150px;
+        height: 606px;
+        overflow: auto;
+    }
+
+    .border-style {
+        border: 1px slateblue solid;
+    }
+
+    .button {
+        padding: 2px;
+        background-color: #8B658B;
+        border-color: navajowhite;
+        color: white;
+    }
+
+    .disable-button {
+        padding: 2px;
+        background-color: slategray;
+        border-color: navajowhite;
+        color: white;
+    }
+
+    .content {
+        max-width: 224px;
+        margin: 3px;
+        padding: 0 2px;
+        word-break: break-all;
+        border: 1px hotpink solid;
+
+        border-radius: 5%;
+    }
+
+    .tips {
+        display: block;
+        z-index: 10;
+        width: 8px;
+        height: 8px;
+        position: relative;
+        float: right;
+        border-radius: 50%;
+        background-color: red;
+    }
+
+
+    .alert-tips {
+        width: 200px;
+        height: 40px;
+        margin: auto;
+        display: flex;
+        position: fixed;
+        text-align: center;
+        border-radius: 10px;
+        vertical-align: middle;
+        left: 50%;
+        top: 8%;
+        transition: all 0.5s linear;
+        visibility: hidden;
+        opacity: 0;
+    }
+
+    .info {
+        background-color: #67C23A;
+        color: white;
+    }
+
+    .warn {
+        background-color: #E6A23C;
+        color: white;
+    }
+
+    .show-tips {
+        visibility: visible;
+        opacity: 1;
+    }
+
+    .hidden-tips {
+        visibility: hidden;
+        opacity: 0;
+    }
+
+
+    .textarea {
+        height: 157px;
+        width: 648px;
+        overflow: auto;
+        border: none;
+        outline: none;
+    }
+
+    .user-item:active {
+        background-color: burlywood;
+        color: white;
+    }
+
+    .user-item:hover {
+        background-color: burlywood;
+        color: white;
+    }
+
+    .user-item:visited {
+        background-color: burlywood;
+        color: white;
+    }
+
+
+    .user-item {
+        display: block;
+        width: 146px;
+        height: 28px;
+        color: #000;
+        border: 1px slateblue solid;
+        position: relative;
+        padding: 1px;
+        text-align: center;
+        z-index: 0;
+    }
+
+    .user-item-active {
+        background-color: burlywood;
+        color: white;
+    }
+
+    .contentDialog {
+        height: 372px;
+        width: 100%;
+        overflow: auto;
+        border: none;
+        outline: none;
+    }
+
+    ::-webkit-scrollbar {
+        /*滚动条整体样式*/
+        width: 3px;
+        /*高宽分别对应横竖滚动条的尺寸*/
+        height: 1px;
+    }
+
+    ::-webkit-scrollbar {
+        /*滚动条整体样式*/
+        width: 3px;
+        /*高宽分别对应横竖滚动条的尺寸*/
+        height: 1px;
+    }
+</style>
+<script>
+    const {createApp, ref, reactive, computed} = Vue
+
+    createApp({
+        setup() {
+            const message = ref('');
+            const username = ref('');
+            const path = ref('spring');
+            const tabUserName = ref('聊天室')
+            const activeIndex = ref(0)
+            // 设置是否可编辑
+            const isReadonly = ref(false)
+            // 对方框中的内容
+            const messageDialog = ref([])
+            const alertMessage = ref({type: 'none', content: ''})
+            const redTips = ref([false])
+            let websocket;
+            const toUser = ref({
+                username: "聊天室",
+                type: "group"
+            })
+
+            const users = ref([{type: "group", username: "聊天室"}])
+
+            function connection() {
+                let pathValue = path.value
+                let usernameValue = username.value
+                let regex = /[0-9A-z\u4e00-\u9af5]{2,12}/
+                let flag = regex.test(usernameValue);
+                if (!flag || usernameValue === "聊天室") {
+                    alert("用户名称不能为空且名称不能为聊天室！")
+                    return
+                }
+                websocket = new WebSocket('ws://localhost:8899/' + pathValue + "/" + usernameValue);
+
+                websocket.onopen = () => {
+                    // websocket.send("login")
+                    isReadonly.value = true
+                    let userMessageList = JSON.parse(sessionStorage.getItem("聊天室"))
+                    if (!userMessageList) {
+                        userMessageList = []
+                    }
+                    messageDialog.value = userMessageList
+                    // 打开列表拉取在线人员
+                }
+                websocket.onmessage = (result) => {
+                    console.log(result.data)
+                    parseProtocol(result.data)
+                }
+                websocket.onerror = (res) => {
+                    users.value = users.value.filter(item => item.username === "聊天室")
+                    resetData()
+                    isReadonly.value = false
+                    console.log(res)
+                }
+                websocket.onclose = (res) => {
+                    users.value = users.value.filter(item => item.username === "聊天室")
+                    resetData()
+                    isReadonly.value = false
+                    console.log('关闭' + res)
+                }
+            }
+
+            function resetData() {
+                tabUserName.value = "聊天室"
+                toUser.value.username = "聊天室"
+                toUser.value.type = "group"
+                activeIndex.value = 0
+                messageDialog.value = JSON.parse(sessionStorage.getItem("null"))
+            }
+
+            function sendMessage() {
+                if (username.value === '' || !username.value || username.value === "聊天室" || username.value === "null") {
+                    return
+                }
+                if (message.value === "" || !message.value) {
+                    return
+                }
+                let data
+                let toUserName = toUser.value.username === "聊天室" ? "null" : toUser.value.username
+                if (toUser.value.type === 'group') {
+                    data = {
+                        "fromUser": username.value,
+                        "toUser": toUserName,
+                        "messageContent": message.value,
+                        "type": toUser.value.type
+                    }
+                } else {
+                    data = {
+                        "fromUser": username.value,
+                        "toUser": toUserName,
+                        "messageContent": message.value,
+                        "type": toUser.value.type
+                    }
+                }
+
+                let chat = {
+                    "type": 'message',
+                    "data": data
+                }
+
+                websocket.send(JSON.stringify(chat))
+                messageDialog.value.push({content: message.value, position: "right"})
+                sessionStorage.setItem(toUser.value.username, JSON.stringify(messageDialog.value))
+                // 清除输出
+                message.value = ''
+            }
+
+            function showName(username, type) {
+                message.value = ''
+                tabUserName.value = username
+                toUser.value.username = username
+                toUser.value.type = type
+                // 获取面板消息，输出
+                let userMessageList = JSON.parse(sessionStorage.getItem(username))
+                if (!userMessageList) {
+                    userMessageList = []
+                }
+                messageDialog.value = userMessageList
+            }
+
+            function updateActiveIndex(index) {
+                activeIndex.value = index
+                console.log("index",index)
+                redTips.value[index] = false
+            }
+
+            // 解析协议
+            function parseProtocol(data) {
+                let chat = JSON.parse(data)
+                // 登录时候获取在线人员列表
+                if (chat.type === "user_list") {
+                    console.log(chat.data)
+                    let items = chat.data.usernames
+
+                    for (let index in items) {
+                        users.value.push({type: "private", username: items[index]})
+                        redTips.value.push(false)
+                    }
+                    return
+                }
+                // 自动刷新在线人员列表
+                if (chat.type === "online_state") {
+                    let currentUsername = chat.data.username
+                    // 如果在线在列表后面添加用户
+                    if (chat.data.online) {
+                        users.value.push({type: "private", username: currentUsername})
+                        alertMessage.value.content = "用户：" + currentUsername + " 已上线"
+                        alertMessage.value.type = "info"
+
+                    } else {
+                        // 如果不在线更新用户状态或删除用户
+                        users.value = users.value.filter(item => item.username !== currentUsername)
+                        alertMessage.value.content = "用户：" + currentUsername + " 已下线"
+                        alertMessage.value.type = "info"
+                        if (chat.data.username === tabUserName.value) {
+                            resetData()
+                        }
+                    }
+                    clearMessage()
+                    return
+                }
+                // 检测推送消息
+                if (chat.type === "message") {
+                    // 消息存储
+                    let fromUser = chat.data.fromUser
+                    let messageType = chat.data.type
+                    let key = messageType === "group" ? "聊天室" : fromUser
+
+                    let userMessageList = JSON.parse(sessionStorage.getItem(key))
+                    console.log(userMessageList)
+                    if (!userMessageList) {
+                        userMessageList = []
+                    }
+                    userMessageList.push({content: chat.data.messageContent, position: "left"})
+                    sessionStorage.setItem(key, JSON.stringify(userMessageList))
+
+                    // 如果当前key与所在的toUser相同，那么直接添加
+                    if (key === toUser.value.username) {
+                        messageDialog.value.push({content: chat.data.messageContent, position: "left"})
+                        return
+                    }
+                    // 指定用户的样式改变
+                    let currentList = users.value
+                    for (let item in currentList) {
+                        if (currentList[item].username === key) {
+                            redTips.value[item] = true
+                            break
+                        }
+                    }
+                    return
+                }
+                if (chat.type === "error_message") {
+                    alertMessage.value.content = chat.data.errorMessage
+                    alertMessage.value.type = "warn"
+                    clearMessage()
+                }
+            }
+
+            /*
+             * 关闭 websocket
+             */
+            function exit() {
+                websocket.close();
+            }
+
+            function clearMessage() {
+                setTimeout(function () {
+                    alertMessage.value.type = 'none'
+                    alertMessage.value.content = ''
+                }, 3000)
+            }
+
+            return {
+                message,
+                path,
+                users,
+                sendMessage,
+                connection,
+                username,
+                tabUserName,
+                showName,
+                activeIndex,
+                updateActiveIndex,
+                messageDialog,
+                isReadonly,
+                exit,
+                alertMessage,
+                redTips,
+            }
+        }
+
+    }).mount('#app')
+</script>
