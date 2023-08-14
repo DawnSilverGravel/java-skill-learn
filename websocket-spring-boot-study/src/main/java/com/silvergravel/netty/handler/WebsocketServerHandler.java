@@ -1,8 +1,17 @@
+
 package com.silvergravel.netty.handler;
 
+
+import com.silvergravel.netty.service.NettyWebsocketService;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
+import io.netty.util.concurrent.DefaultThreadFactory;
+
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author DawnStar
@@ -10,36 +19,34 @@ import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
  */
 public class WebsocketServerHandler extends SimpleChannelInboundHandler<TextWebSocketFrame> {
 
+    private final ExecutorService executorService = new ThreadPoolExecutor(8, 8, 10,
+            TimeUnit.SECONDS, new ArrayBlockingQueue<>(500),new DefaultThreadFactory("WebsocketServerHandler"), new ThreadPoolExecutor.CallerRunsPolicy());
+
     @Override
     protected void channelRead0(ChannelHandlerContext channelHandlerContext, TextWebSocketFrame textWebSocketFrame) throws Exception {
         System.out.print("websocket 8092: ");
         System.out.println(textWebSocketFrame.text());
         String msg = textWebSocketFrame.text();
-//        Protocol protocol = JSONUtil.toBean(msg,Protocol.class);
-//        if(Constant.CONNECT.equals(protocol.getType())){
-//            protocol.setContent("服务器回传:"+protocol.getContent());
-//            channelHandlerContext.writeAndFlush(new TextWebSocketFrame(JSONUtil.toJsonStr(protocol)));
-//        }
-//        if(Constant.CONNECTS.equals(protocol.getType())){
-//            String[] split = protocol.getContent().split(Constant.CONNECT_SPLIT);
-//
-//        }
-        // 解析发过来的数据报文,webscoketProtocol是自定义的协议字段类
-//        WebSocketProtocol webSocketProtocol = JSONUtil.toBean(msg,WebSocketProtocol.class);
-//        if (!checkProtocol(webSocketProtocol)) {
-//            channelHandlerContext.writeAndFlush(JSONUtil.toJsonStr(WebsocketUtil.errMessage(WebsocketTypeEnum.PROTOCOL_ERR)));
-//        }
-        System.out.println("simple:"+channelHandlerContext.channel().getClass());
+        NettyWebsocketService.transformMessage(msg, channelHandlerContext);
 
     }
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
-        System.out.println("8092持续连接:"+ctx.channel().id().asLongText());
+        executorService.execute(() -> {
+            try {
+                TimeUnit.MILLISECONDS.sleep(200);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+            NettyWebsocketService.pushUserList(ctx);
+        });
     }
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-        System.out.println("8092失活:"+ctx.channel().id().asLongText());
+        NettyWebsocketService.remove(ctx);
+        ctx.close();
+
     }
 }

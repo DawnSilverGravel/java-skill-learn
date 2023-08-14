@@ -1,6 +1,9 @@
-package com.silvergravel.netty.handler;
+
+package com.silvergravel.netty.config;
 
 
+import com.silvergravel.netty.handler.BeforeWebsocketHandler;
+import com.silvergravel.netty.handler.WebsocketServerHandler;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.handler.codec.http.HttpObjectAggregator;
@@ -13,6 +16,13 @@ import io.netty.handler.stream.ChunkedWriteHandler;
  * @date 2022/10/11
  */
 public class WebsocketServerInitializer extends ChannelInitializer<SocketChannel> {
+
+    private final String websocketPath;
+
+    public WebsocketServerInitializer(String websocketPath) {
+        this.websocketPath = "/"+websocketPath;
+    }
+
     @Override
     protected void initChannel(SocketChannel socketChannel) throws Exception {
         socketChannel.pipeline()
@@ -22,10 +32,10 @@ public class WebsocketServerInitializer extends ChannelInitializer<SocketChannel
                 .addLast(new ChunkedWriteHandler())
                 // 使用http 累加器
                 .addLast(new HttpObjectAggregator(8192))
-                // 在转换协议之前处理路径,通过路径绑定用户
-                .addLast(new BeforeWebsocketHandler("/websocket"))
+                // 在转换协议之前处理路径,通过路径绑定用
+                .addLast(new BeforeWebsocketHandler(websocketPath))
                 // 转换ws协议
-                .addLast(new WebSocketServerProtocolHandler("/websocket"))
+                .addLast(new WebSocketServerProtocolHandler(websocketPath))
                 // 添加自定义处理器
                 .addLast(new WebsocketServerHandler());
     }

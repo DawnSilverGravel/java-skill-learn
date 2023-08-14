@@ -1,2 +1,5 @@
 server:
   port: 8899
+netty:
+  port: 8900
+  websocket-path: netty-websocket

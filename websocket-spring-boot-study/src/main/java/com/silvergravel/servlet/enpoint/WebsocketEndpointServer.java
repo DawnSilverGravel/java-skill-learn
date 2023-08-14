@@ -53,7 +53,7 @@ public class WebsocketEndpointServer {
 
     @OnMessage
     public void onMessage(String message, Session session) throws IOException{
-        ChatProtocol<ChatProtocol.Message> chatProtocol = mapper.readValue(message, new TypeReference<>() {
+        ChatProtocol<ChatProtocol.Message> chatProtocol = mapper.readValue(message, new TypeReference<ChatProtocol<ChatProtocol.Message>>() {
         });
         transformMessage(chatProtocol, session);
     }

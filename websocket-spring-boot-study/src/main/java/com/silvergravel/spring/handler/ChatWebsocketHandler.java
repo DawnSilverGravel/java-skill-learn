@@ -65,7 +65,7 @@ public class ChatWebsocketHandler implements WebSocketHandler {
     public void handleMessage(WebSocketSession session, WebSocketMessage<?> message) throws Exception {
         Object payload = message.getPayload();
         System.out.println(payload);
-        ChatProtocol<ChatProtocol.Message> chatProtocol = mapper.readValue(String.valueOf(payload), new TypeReference<>() {
+        ChatProtocol<ChatProtocol.Message> chatProtocol = mapper.readValue(String.valueOf(payload), new TypeReference<ChatProtocol<ChatProtocol.Message>>() {
         });
         transformMessage(chatProtocol, session);
     }
