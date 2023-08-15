@@ -45,7 +45,7 @@ public class WebsocketServerHandler extends SimpleChannelInboundHandler<TextWebS
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-        NettyWebsocketService.remove(ctx);
+        NettyWebsocketService.removeUser(ctx);
         ctx.close();
 
     }

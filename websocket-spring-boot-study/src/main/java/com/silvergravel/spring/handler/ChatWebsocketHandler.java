@@ -35,6 +35,11 @@ public class ChatWebsocketHandler implements WebSocketHandler {
     }
 
 
+    /**
+     * 建立完成之后要做的事情
+     * @param session 当前session
+     * @throws Exception 异常
+     */
     @Override
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
         // 建立连接之后需要完成的事情
@@ -42,7 +47,7 @@ public class ChatWebsocketHandler implements WebSocketHandler {
         if (uri != null) {
             String path = uri.getPath();
             String username = path.replace(websocketPrefix + "/", "");
-            WebSocketSession webSocketSession = USERNAME_SESSION_MAP.get(username);
+            WebSocketSession webSocketSession = USERNAME_SESSION_MAP.remove(username);
             // 先发送挤下线通知
             if (webSocketSession != null) {
                 ChatProtocol<ChatProtocol.ErrorMessage> chatProtocol = MessageUtil.errorMessageChatProtocol("-1", "账号在别处登录 您被已被挤下线!");
@@ -65,7 +70,8 @@ public class ChatWebsocketHandler implements WebSocketHandler {
     public void handleMessage(WebSocketSession session, WebSocketMessage<?> message) throws Exception {
         Object payload = message.getPayload();
         System.out.println(payload);
-        ChatProtocol<ChatProtocol.Message> chatProtocol = mapper.readValue(String.valueOf(payload), new TypeReference<ChatProtocol<ChatProtocol.Message>>() {
+        // ChatProtocol<ChatProtocol.Message> chatProtocol = mapper.readValue(String.valueOf(payload), new TypeReference<ChatProtocol<ChatProtocol.Message>>() {}); // JDK8
+        ChatProtocol<ChatProtocol.Message> chatProtocol = mapper.readValue(String.valueOf(payload), new TypeReference<>() {
         });
         transformMessage(chatProtocol, session);
     }

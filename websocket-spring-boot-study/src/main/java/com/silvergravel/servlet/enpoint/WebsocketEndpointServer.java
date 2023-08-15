@@ -36,13 +36,14 @@ public class WebsocketEndpointServer {
 
     @OnOpen
     public void onOpen(@PathParam("username") String username, Session session) throws Exception {
-        Session webSocketSession = USERNAME_SESSION_MAP.get(username);
+        Session webSocketSession = USERNAME_SESSION_MAP.remove(username);
         if (webSocketSession != null) {
             ChatProtocol<ChatProtocol.ErrorMessage> chatProtocol = MessageUtil.errorMessageChatProtocol("-1", "账号在别处登录 您被已被挤下线!");
             webSocketSession.getBasicRemote().sendText(mapper.writeValueAsString(chatProtocol));
             webSocketSession.close();
             System.err.printf("当前用户: %s session id 为：%s 被挤下线 时间: %s\n", username, webSocketSession.getId(), DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").format(LocalDateTime.now()));
-            ;
+            // 对所有用户发送下线通知
+            sendOnlineState(USERNAME_SESSION_MAP.values(), username, false);
         }
         // 对所有用户发送上线通知
         sendOnlineState(USERNAME_SESSION_MAP.values(), username, true);

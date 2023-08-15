@@ -4,6 +4,7 @@
     <meta charset="utf-8">
     <title>Websocket聊天室</title>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://cdn.bootcdn.net/ajax/libs/stomp.js/2.3.3/stomp.js"></script>
 </head>
 <body>
 <div style="margin: 10px auto;height: 5px;"></div>
@@ -21,12 +22,6 @@
                     </div>
                 </div>
             </div>
-<!--            <div :class="[alertMessage.type!=='none'?'show-tips':'hidden-tips','alert-tips',alertMessage.type]">-->
-<!--                <p style="margin: auto;">-->
-<!--                    {{alertMessage.content}}-->
-<!--                </p>-->
-<!--            </div>-->
-
 
     <div style="text-align: center; vertical-align:middle;width: 100%;">
         <input v-model="username" placeholder="input username" :readonly="isReadonly"/>
@@ -270,14 +265,16 @@
             const isReadonly = ref(false)
             // 对方框中的内容
             const messageDialog = ref([])
-            const alertMessage = ref({type: 'none', content: ''})
+            // 提示信息
             const alertMessages = ref([])
+            // 有信息来的红点
             const redTips = ref([false])
             let websocket;
             const toUser = ref({
                 username: "聊天室",
                 type: "group"
             })
+            let stompClient
 
             const users = ref([{type: "group", username: "聊天室"}])
 
@@ -291,17 +288,22 @@
                     return
                 }
                 let port = pathValue==="netty-websocket" ? 8900 : 8899
-                websocket = new WebSocket("ws://localhost:"+port+"/" + pathValue + "/" + usernameValue);
 
+                if(pathValue==="stomp"){
+                    let socket = new WebSocket("ws://localhost:"+port+"/" + pathValue);
+                    stompConnect(usernameValue,socket)
+                    return;
+                }
+                // 非Stomp方式执行以下代码
+                websocket = new WebSocket("ws://localhost:"+port+"/" + pathValue + "/" + usernameValue);
                 websocket.onopen = () => {
-                    // websocket.send("login")
                     isReadonly.value = true
+                    // 成功打开连接的时候，需要做的事情
                     let userMessageList = JSON.parse(sessionStorage.getItem("聊天室"))
                     if (!userMessageList) {
                         userMessageList = []
                     }
                     messageDialog.value = userMessageList
-                    // 打开列表拉取在线人员
                 }
                 websocket.onmessage = (result) => {
                     console.log(result.data)
@@ -319,6 +321,37 @@
                     isReadonly.value = false
                     console.log('关闭' + res)
                 }
+            }
+
+            function stompConnect(username,socket){
+                let headers = {
+                    // 登录的用户名称
+                    'login': username,
+                    // 登录通行码
+                    // 'passcode': 'mypasscode',
+                };
+                stompClient = Stomp.over(socket);
+                stompClient.connect(headers, function (frame) {
+                    // 成功连接时
+                    isReadonly.value = true
+                    // 成功打开连接的时候，需要做的事情
+                    let userMessageList = JSON.parse(sessionStorage.getItem("聊天室"))
+                    if (!userMessageList) {
+                        userMessageList = []
+                    }
+                    messageDialog.value = userMessageList
+                    // 订阅属于自己的主题，前缀为
+                    stompClient.subscribe('/sliver-gravel/'+username+"/notice", function (greeting) {
+                        console.log(greeting)
+                        parseProtocol(greeting.body);
+                    },headers);
+                },function (error){
+                    // 连接关闭需要做的事情
+                    users.value = users.value.filter(item => item.username === "聊天室")
+                    resetData()
+                    isReadonly.value = false
+                    console.log('stomp连接关闭>>>' + error);
+                });
             }
 
             function resetData() {
@@ -495,7 +528,6 @@
                 messageDialog,
                 isReadonly,
                 exit,
-                alertMessage,
                 alertMessages,
                 redTips,
             }

@@ -3,3 +3,6 @@ server:
 netty:
   port: 8900
   websocket-path: netty-websocket
+stomp:
+  # 用户订阅的目标尾缀
+  user-destination: /notice
