@@ -345,6 +345,12 @@
                         console.log(greeting)
                         parseProtocol(greeting.body);
                     },headers);
+
+                    stompClient.subscribe("/topic/notice", function (greeting) {
+                        console.log(greeting)
+                        parseProtocol(greeting.body);
+                    });
+
                 },function (error){
                     // 连接关闭需要做的事情
                     users.value = users.value.filter(item => item.username === "聊天室")
@@ -438,16 +444,16 @@
                     // 如果在线在列表后面添加用户
                     if (chat.data.online) {
                         users.value.push({type: "private", username: currentUsername})
-                        alertMessage.value.content = "用户：" + currentUsername + " 已上线"
-                        alertMessage.value.type = "info"
+                        // alertMessage.value.content = "用户：" + currentUsername + " 已上线"
+                        // alertMessage.value.type = "info"
 
                         alertMessages.value.unshift({type: "info", content: "用户：" + currentUsername + " 已上线"})
 
                     } else {
                         // 如果不在线更新用户状态或删除用户
                         users.value = users.value.filter(item => item.username !== currentUsername)
-                        alertMessage.value.content = "用户：" + currentUsername + " 已下线"
-                        alertMessage.value.type = "info"
+                        // alertMessage.value.content = "用户：" + currentUsername + " 已下线"
+                        // alertMessage.value.type = "info"
                         alertMessages.value.unshift({type: "info", content: "用户：" + currentUsername + " 已下线"})
                         if (chat.data.username === tabUserName.value) {
                             resetData()
@@ -487,8 +493,8 @@
                     return
                 }
                 if (chat.type === "error_message") {
-                    alertMessage.value.content = chat.data.errorMessage
-                    alertMessage.value.type = "warn"
+                    // alertMessage.value.content = chat.data.errorMessage
+                    // alertMessage.value.type = "warn"
                     alertMessages.value.unshift({type: "warn", content: chat.data.errorMessage})
                     clearMessage()
                 }

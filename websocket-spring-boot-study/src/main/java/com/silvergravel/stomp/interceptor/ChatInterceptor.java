@@ -6,10 +6,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.MessageHeaders;
+import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.SimpMessageType;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.messaging.simp.stomp.StompCommand;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
+import org.springframework.messaging.simp.stomp.StompHeaders;
 import org.springframework.messaging.support.ChannelInterceptor;
 import org.springframework.messaging.support.GenericMessage;
 import org.springframework.messaging.support.MessageHeaderAccessor;
@@ -35,9 +37,7 @@ public class ChatInterceptor implements ChannelInterceptor {
         if (accessor == null) {
             return message;
         }
-        System.out.println(Arrays.toString(accessor.getHeartbeat()));
-        System.out.println(message);
-
+        MessageHeaderAccessor accessor1 = new MessageHeaderAccessor();
         if (StompCommand.CONNECT.equals(accessor.getCommand())) {
             String sessionId = accessor.getSessionId();
             String username = accessor.getLogin();
@@ -51,7 +51,17 @@ public class ChatInterceptor implements ChannelInterceptor {
                     headers.put("simpSessionAttributes", new HashMap<>(0));
                     headers.put("simpSessionId", lastSessionId);
                     GenericMessage<byte[]> genericMessage = new GenericMessage<>(new byte[0], headers);
-                    System.err.println("new: "+genericMessage);
+                    System.err.println("new: " + genericMessage);
+                    channel.send(genericMessage);
+                    // 发送下线信息
+                    headers = genericHeaders(accessor.getSessionId(), SimpMessageType.MESSAGE, StompCommand.SEND);
+                    Map<String, Object> nativeHeaders = new HashMap<>(2);
+                    nativeHeaders.put("destination", Collections.singletonList("/chat/offline"));
+                    nativeHeaders.put("content-length", Collections.singletonList(username.length()));
+                    headers.put("nativeHeaders", nativeHeaders);
+                    headers.put("simpDestination", "/chat/offline");
+                    headers.put("simpSessionId", sessionId);
+                    genericMessage = new GenericMessage<>(username.getBytes(StandardCharsets.UTF_8), headers);
                     channel.send(genericMessage);
                 }
             }
@@ -67,7 +77,7 @@ public class ChatInterceptor implements ChannelInterceptor {
         if (accessor == null) {
             return;
         }
-        if (!StompCommand.SUBSCRIBE.equals(accessor.getCommand())) {
+        if (!StompCommand.SUBSCRIBE.equals(accessor.getCommand()) || accessor.getLogin() == null) {
             return;
         }
         String username = Objects.requireNonNull(accessor.getLogin());
@@ -76,7 +86,7 @@ public class ChatInterceptor implements ChannelInterceptor {
         nativeHeaders.put("destination", Collections.singletonList("/chat/user-list"));
         nativeHeaders.put("content-length", Collections.singletonList(username.length()));
         headers.put("nativeHeaders", nativeHeaders);
-        headers.put("simpDestination","/chat/user-list");
+        headers.put("simpDestination", "/chat/user-list");
         GenericMessage<byte[]> genericMessage = new GenericMessage<>(username.getBytes(StandardCharsets.UTF_8), headers);
         channel.send(genericMessage);
     }
@@ -91,14 +101,5 @@ public class ChatInterceptor implements ChannelInterceptor {
         return headers;
     }
 
-//    private static class MessageArgs{
-//        private final static Map<String,String> DEFAULT_SIMP_SESSION_ATTRIBUTES = new HashMap<>(0);
-//        private final static Long[] DEFAULT_SIMP_HEARTBEAT= new Long[]{0L,0L};
-//        private final String simpMessageType = "simpMessageType";
-//        private final String stompCommand = "stompCommand";
-//        private final String simpSessionAttributes = "simpSessionAttributes";
-//        private final String simpHeartbeat = "simpHeartbeat";
-//        private final String simpSessionId = "simpSessionId";
-//        private final String }
 
 }
