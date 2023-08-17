@@ -24,7 +24,6 @@ public class WebsocketServerHandler extends SimpleChannelInboundHandler<TextWebS
 
     @Override
     protected void channelRead0(ChannelHandlerContext channelHandlerContext, TextWebSocketFrame textWebSocketFrame) throws Exception {
-        System.out.print("websocket 8092: ");
         System.out.println(textWebSocketFrame.text());
         String msg = textWebSocketFrame.text();
         NettyWebsocketService.transformMessage(msg, channelHandlerContext);
@@ -33,6 +32,7 @@ public class WebsocketServerHandler extends SimpleChannelInboundHandler<TextWebS
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
+        // 等待一会，推送列表消息
         executorService.execute(() -> {
             try {
                 TimeUnit.MILLISECONDS.sleep(200);
@@ -47,6 +47,5 @@ public class WebsocketServerHandler extends SimpleChannelInboundHandler<TextWebS
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
         NettyWebsocketService.removeUser(ctx);
         ctx.close();
-
     }
 }

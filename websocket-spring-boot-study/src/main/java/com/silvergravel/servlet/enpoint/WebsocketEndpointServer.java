@@ -5,6 +5,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.silvergravel.protocol.ChatProtocol;
 import com.silvergravel.util.MessageUtil;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
@@ -28,6 +29,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 @ServerEndpoint(value = "/servlet/{username}", subprotocols = {"gravel"})
 @Component
+@Slf4j
 public class WebsocketEndpointServer {
     private final static ConcurrentHashMap<String, Session> USERNAME_SESSION_MAP = new ConcurrentHashMap<>();
 
@@ -41,11 +43,12 @@ public class WebsocketEndpointServer {
             ChatProtocol<ChatProtocol.ErrorMessage> chatProtocol = MessageUtil.errorMessageChatProtocol("-1", "账号在别处登录 您被已被挤下线!");
             webSocketSession.getBasicRemote().sendText(mapper.writeValueAsString(chatProtocol));
             webSocketSession.close();
-            System.err.printf("当前用户: %s session id 为：%s 被挤下线 时间: %s\n", username, webSocketSession.getId(), DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").format(LocalDateTime.now()));
+            log.warn("servlet：用户 {} 被挤下线",username);
             // 对所有用户发送下线通知
             sendOnlineState(USERNAME_SESSION_MAP.values(), username, false);
         }
         // 对所有用户发送上线通知
+        log.info("servlet：用户 {} 上线",username);
         sendOnlineState(USERNAME_SESSION_MAP.values(), username, true);
         pushUserList(session, USERNAME_SESSION_MAP.keys());
         USERNAME_SESSION_MAP.put(username, session);
@@ -54,7 +57,8 @@ public class WebsocketEndpointServer {
 
     @OnMessage
     public void onMessage(String message, Session session) throws IOException{
-        ChatProtocol<ChatProtocol.Message> chatProtocol = mapper.readValue(message, new TypeReference<ChatProtocol<ChatProtocol.Message>>() {
+        //  ChatProtocol<ChatProtocol.Message> chatProtocol = mapper.readValue(message, new TypeReference<ChatProtocol<ChatProtocol.Message>>() {}); // JDK8 写法
+        ChatProtocol<ChatProtocol.Message> chatProtocol = mapper.readValue(message, new TypeReference<>() {
         });
         transformMessage(chatProtocol, session);
     }
@@ -66,6 +70,7 @@ public class WebsocketEndpointServer {
             currentSession.close();
         }
         sendOnlineState(USERNAME_SESSION_MAP.values(), username, false);
+        log.info("servlet：{} 下线",username);
         session.close();
     }
 

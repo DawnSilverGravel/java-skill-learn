@@ -1,26 +1,23 @@
 
+
 package com.silvergravel.stomp.interceptor;
 
+
 import com.silvergravel.stomp.service.StompChatService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
-import org.springframework.messaging.MessageHeaders;
-import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.SimpMessageType;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.messaging.simp.stomp.StompCommand;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
-import org.springframework.messaging.simp.stomp.StompHeaders;
 import org.springframework.messaging.support.ChannelInterceptor;
 import org.springframework.messaging.support.GenericMessage;
 import org.springframework.messaging.support.MessageHeaderAccessor;
-import org.springframework.stereotype.Component;
 
-import javax.annotation.Resource;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /**
  * description:
@@ -30,40 +27,22 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class ChatInterceptor implements ChannelInterceptor {
 
+    private final MessageService messageService = new MessageService();
+
     @Override
     public Message<?> preSend(Message<?> message, MessageChannel channel) {
         StompHeaderAccessor accessor =
                 MessageHeaderAccessor.getAccessor(message, StompHeaderAccessor.class);
+
         if (accessor == null) {
             return message;
         }
-        MessageHeaderAccessor accessor1 = new MessageHeaderAccessor();
         if (StompCommand.CONNECT.equals(accessor.getCommand())) {
             String sessionId = accessor.getSessionId();
             String username = accessor.getLogin();
             if (sessionId != null && username != null) {
-                String lastSessionId = StompChatService.addUser(username, sessionId);
-                // 如果之前有登陆过的账号，则将之前的账号关闭
-                if (lastSessionId != null) {
-                    Map<String, Object> headers = new HashMap<>(5);
-                    headers.put("simpMessageType", SimpMessageType.DISCONNECT);
-                    headers.put("stompCommand", StompCommand.DISCONNECT);
-                    headers.put("simpSessionAttributes", new HashMap<>(0));
-                    headers.put("simpSessionId", lastSessionId);
-                    GenericMessage<byte[]> genericMessage = new GenericMessage<>(new byte[0], headers);
-                    System.err.println("new: " + genericMessage);
-                    channel.send(genericMessage);
-                    // 发送下线信息
-                    headers = genericHeaders(accessor.getSessionId(), SimpMessageType.MESSAGE, StompCommand.SEND);
-                    Map<String, Object> nativeHeaders = new HashMap<>(2);
-                    nativeHeaders.put("destination", Collections.singletonList("/chat/offline"));
-                    nativeHeaders.put("content-length", Collections.singletonList(username.length()));
-                    headers.put("nativeHeaders", nativeHeaders);
-                    headers.put("simpDestination", "/chat/offline");
-                    headers.put("simpSessionId", sessionId);
-                    genericMessage = new GenericMessage<>(username.getBytes(StandardCharsets.UTF_8), headers);
-                    channel.send(genericMessage);
-                }
+                // 强制下线
+                messageService.forcedOffline(sessionId, username, channel);
             }
         }
         return message;
@@ -77,29 +56,137 @@ public class ChatInterceptor implements ChannelInterceptor {
         if (accessor == null) {
             return;
         }
-        if (!StompCommand.SUBSCRIBE.equals(accessor.getCommand()) || accessor.getLogin() == null) {
+        Object simpHeart = message.getHeaders().get(StompHeaderAccessor.HEART_BEAT_HEADER);
+        List<String> heart = accessor.getNativeHeader(StompHeaderAccessor.STOMP_HEARTBEAT_HEADER);
+        // 客户端关闭连接会 接收到两条 DISCONNECT 消息， 有一个有心跳键值，一个没有心跳键值，故选择一个
+        // 学识尚浅，不知原因。
+        boolean disconnect = StompCommand.DISCONNECT.equals(accessor.getCommand()) && (heart != null || simpHeart != null);
+        if (disconnect) {
+            messageService.sendOffline(accessor.getSessionId(), accessor.getLogin(), channel);
             return;
         }
-        String username = Objects.requireNonNull(accessor.getLogin());
-        Map<String, Object> headers = genericHeaders(accessor.getSessionId(), SimpMessageType.MESSAGE, StompCommand.SEND);
-        Map<String, Object> nativeHeaders = new HashMap<>(2);
-        nativeHeaders.put("destination", Collections.singletonList("/chat/user-list"));
-        nativeHeaders.put("content-length", Collections.singletonList(username.length()));
-        headers.put("nativeHeaders", nativeHeaders);
-        headers.put("simpDestination", "/chat/user-list");
-        GenericMessage<byte[]> genericMessage = new GenericMessage<>(username.getBytes(StandardCharsets.UTF_8), headers);
-        channel.send(genericMessage);
+        // 由于是异步的处理，所以订阅的时候，自己也会接受自己上线的消息，这里一般出现在第一个用户登录
+        if (StompCommand.CONNECT.equals(accessor.getCommand())) {
+            String sessionId = accessor.getSessionId();
+            String username = accessor.getLogin();
+            if (sessionId != null && username != null) {
+                messageService.sendOnline(sessionId, username, channel);
+            }
+            return;
+        }
+        // Connect消息发送完毕之后，保证订阅该主题之后再发送，发送用户上线信息
+        if (StompCommand.SUBSCRIBE.equals(accessor.getCommand()) && accessor.getLogin() != null) {
+            messageService.sendUserList(accessor.getSessionId(), accessor.getLogin(), channel);
+        }
     }
 
 
-    private Map<String, Object> genericHeaders(String sessionId, SimpMessageType simpMessageType, StompCommand command) {
-        Map<String, Object> headers = new HashMap<>(5);
-        headers.put("simpMessageType", simpMessageType);
-        headers.put("stompCommand", command);
-        headers.put("simpSessionAttributes", new HashMap<>(0));
-        headers.put("simpSessionId", sessionId);
-        return headers;
+    private StompHeaderAccessor stompHeaderAccessor(StompCommand command, SimpMessageType messageType) {
+        StompHeaderAccessor stompHeaderAccessor = StompHeaderAccessor.create(command);
+        stompHeaderAccessor.setMessageTypeIfNotSet(messageType);
+        stompHeaderAccessor.setSessionAttributes(new HashMap<>(0));
+        return stompHeaderAccessor;
     }
 
+    /**
+     * 消息服务
+     */
+    private class MessageService {
+
+        /**
+         * 强制下线
+         *
+         * @param sessionId 当前进行连接的sessionID
+         * @param username  对应的用户
+         * @param channel   管道
+         */
+        void forcedOffline(String sessionId, String username, MessageChannel channel) {
+            // 如果之前有登陆过的账号，则将之前的账号关闭
+            String lastSessionId = StompChatService.addUser(username, sessionId);
+            if (lastSessionId != null) {
+                // 发送错误的信息
+                sendErrorMessage(lastSessionId, username, channel);
+                // 暂停一会，保证错误信息在关闭之前发送
+                try {
+                    TimeUnit.MILLISECONDS.sleep(3);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+                // 该lastSessionId的连接关闭
+                StompHeaderAccessor accessor = stompHeaderAccessor(StompCommand.DISCONNECT, SimpMessageType.DISCONNECT);
+                accessor.setSessionId(lastSessionId);
+                // 设置心跳用于关闭连接信息，因为有两条关闭信息，所以用作区分
+                accessor.setHeartbeat(0, 0);
+                GenericMessage<byte[]> genericMessage = new GenericMessage<>(new byte[0], accessor.getMessageHeaders());
+                channel.send(genericMessage);
+            }
+        }
+
+        void sendOffline(String sessionId, String username, MessageChannel channel) {
+            if (username == null) {
+                username = StompChatService.removeUser(sessionId);
+                if (username == null) {
+                    System.err.println("sessionId：" + sessionId + " 不存在");
+                    return;
+                }
+            }
+            // 发送下线信息
+            StompHeaderAccessor accessor = stompHeaderAccessor(StompCommand.SEND, SimpMessageType.MESSAGE);
+            accessor.setNativeHeaderValues("destination", Collections.singletonList("/chat/offline"));
+            accessor.setNativeHeaderValues("content-length", Collections.singletonList(String.valueOf(username.length())));
+            accessor.setDestination("/chat/offline");
+            accessor.setHeartbeat(1000, 1000);
+            accessor.setSessionId(sessionId);
+            GenericMessage<byte[]> genericMessage = new GenericMessage<>(username.getBytes(StandardCharsets.UTF_8), accessor.getMessageHeaders());
+            channel.send(genericMessage);
+        }
+
+        void sendOnline(String sessionId, String username, MessageChannel channel) {
+            StompHeaderAccessor accessor = stompHeaderAccessor(StompCommand.SEND, SimpMessageType.MESSAGE);
+            accessor.setNativeHeaderValues("destination", Collections.singletonList("/chat/online"));
+            accessor.setNativeHeaderValues("content-length", Collections.singletonList(String.valueOf(username.length())));
+            accessor.setDestination("/chat/online");
+            accessor.setHeartbeat(1000, 1000);
+            accessor.setSessionId(sessionId);
+            GenericMessage<byte[]> genericMessage = new GenericMessage<>(username.getBytes(StandardCharsets.UTF_8), accessor.getMessageHeaders());
+            channel.send(genericMessage);
+        }
+
+        void sendUserList(String sessionId, String username, MessageChannel channel) {
+
+            StompHeaderAccessor accessor = stompHeaderAccessor(StompCommand.SEND, SimpMessageType.MESSAGE);
+            accessor.setNativeHeaderValues("destination", Collections.singletonList("/chat/user-list"));
+            accessor.setNativeHeaderValues("content-length", Collections.singletonList(String.valueOf(username.length())));
+            accessor.setDestination("/chat/user-list");
+            accessor.setHeartbeat(1000, 1000);
+            accessor.setSessionId(sessionId);
+            GenericMessage<byte[]> genericMessage = new GenericMessage<>(username.getBytes(StandardCharsets.UTF_8), accessor.getMessageHeaders());
+            channel.send(genericMessage);
+        }
+
+        void sendErrorMessage(String sessionId, String username, MessageChannel channel) {
+            StompHeaderAccessor accessor = stompHeaderAccessor(StompCommand.SEND, SimpMessageType.MESSAGE);
+            accessor.setNativeHeaderValues("destination", Collections.singletonList("/chat/forced-offline"));
+            accessor.setNativeHeaderValues("content-length", Collections.singletonList(String.valueOf(username.length())));
+            accessor.setDestination("/chat/forced-offline");
+            accessor.setHeartbeat(1000, 1000);
+            accessor.setSessionId(sessionId);
+            GenericMessage<byte[]> genericMessage = new GenericMessage<>(username.getBytes(StandardCharsets.UTF_8), accessor.getMessageHeaders());
+            channel.send(genericMessage);
+
+        }
+
+//        private void sendCommand(String sessionId, String command, MessageChannel channel) {
+//            StompHeaderAccessor accessor = stompHeaderAccessor(StompCommand.SEND, SimpMessageType.MESSAGE);
+//            accessor.setNativeHeaderValues("destination", Collections.singletonList("/chat/event-handle"));
+//            accessor.setNativeHeaderValues("content-length", Collections.singletonList(String.valueOf(command.length())));
+//            accessor.setDestination("/chat/event-handle");
+//            accessor.setHeartbeat(1000, 1000);
+//            accessor.setSessionId(sessionId);
+//            GenericMessage<byte[]> genericMessage = new GenericMessage<>(command.getBytes(StandardCharsets.UTF_8), accessor.getMessageHeaders());
+//            channel.send(genericMessage);
+//        }
+
+    }
 
 }

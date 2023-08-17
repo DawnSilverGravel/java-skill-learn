@@ -11,85 +11,85 @@
 
 <div id="app" style="display:flex;flex-wrap:wrap;position: relative;z-index: 0;">
 
-        <div style="position: relative;z-index: 2;margin: 0 auto;">
+    <div style="position: relative;z-index: 2;margin: 0 auto;">
 
-            <div class="alert-tips-container">
-                <div v-for="(currentAlertMessage,index) in alertMessages" :key="index">
-                    <div :class="[currentAlertMessage.type!=='none'?'show-tips':'hidden-tips','alert-tips',currentAlertMessage.type]">
-                        <p style="margin: auto;">
-                            {{currentAlertMessage.content}}
-                        </p>
-                    </div>
+        <div class="alert-tips-container">
+            <div v-for="(currentAlertMessage,index) in alertMessages" :key="index">
+                <div :class="[currentAlertMessage.type!=='none'?'show-tips':'hidden-tips','alert-tips',currentAlertMessage.type]">
+                    <p style="margin: auto;">
+                        {{currentAlertMessage.content}}
+                    </p>
                 </div>
             </div>
+        </div>
 
-    <div style="text-align: center; vertical-align:middle;width: 100%;">
-        <input v-model="username" placeholder="input username" :readonly="isReadonly"/>
-        &nbsp;
-        <input type="radio" id="servlet" value="servlet" v-model="path"/>
-        <label for="servlet">servlet</label>
+        <div style="text-align: center; vertical-align:middle;width: 100%;">
+            <input v-model="username" placeholder="input username" :readonly="isReadonly"/>
+            &nbsp;
+            <input type="radio" id="servlet" value="servlet" v-model="path"/>
+            <label for="servlet">servlet</label>
 
-        <input type="radio" id="spring" value="spring" v-model="path"/>
-        <label for="spring">spring</label>
+            <input type="radio" id="spring" value="spring" v-model="path"/>
+            <label for="spring">spring</label>
 
-        <input type="radio" id="netty" value="netty-websocket" v-model="path"/>
-        <label for="netty">netty</label>
+            <input type="radio" id="netty" value="netty-websocket" v-model="path"/>
+            <label for="netty">netty</label>
 
-        <input type="radio" id="stomp" value="stomp" v-model="path"/>
-        <label for="stomp">stomp</label>
-        &nbsp;&nbsp;
-        <button @click="connection" :class="{button: !isReadonly,'disable-button': isReadonly}"
-                :disabled="isReadonly">连
-            接
-        </button>
-        &nbsp;&nbsp;
-        <button @click="exit" :class="{button: isReadonly,'disable-button': !isReadonly}" :disabled="!isReadonly"
-                type="text">退 出
-        </button>
-    </div>
-    <!-- </div> -->
-    <div style="margin: 20px auto;">
-    </div>
-    <!-- 左边显示栏 -->
-    <div class="sidebar border-style">
-        <div v-for="(user,index) in users" style="text-align: center;" :key="index">
+            <input type="radio" id="stomp" value="stomp" v-model="path"/>
+            <label for="stomp">stomp</label>
+            &nbsp;&nbsp;
+            <button @click="connection" :class="{button: !isReadonly,'disable-button': isReadonly}"
+                    :disabled="isReadonly">连
+                接
+            </button>
+            &nbsp;&nbsp;
+            <button @click="exit" :class="{button: isReadonly,'disable-button': !isReadonly}" :disabled="!isReadonly"
+                    type="text">退 出
+            </button>
+        </div>
+        <!-- </div> -->
+        <div style="margin: 20px auto;">
+        </div>
+        <!-- 左边显示栏 -->
+        <div class="sidebar border-style">
+            <div v-for="(user,index) in users" style="text-align: center;" :key="index">
                 <span @click="showName(user.username,user.type),updateActiveIndex(index)" class="user-item"
                       :class="{'user-item-active':activeIndex==index}">{{user.username}}<span
                         :class="{tips: redTips[index]}"></span></span>
 
+            </div>
         </div>
-    </div>
 
-    <div style="float: left;width: 653px;height: 606px;" class="border-style">
-        <!-- 右边主页头 -->
-        <div style="text-align: center;height: 30px;" class="border-style">{{tabUserName}}</div>
-        <!-- 滑板显示内容 -->
-        <div class="border-style contentDialog">
-            <div v-for="(message,index) in messageDialog" :key="index">
-                <div style="width: 100%;">
+        <div style="float: left;width: 653px;height: 606px;" class="border-style">
+            <!-- 右边主页头 -->
+            <div style="text-align: center;height: 30px;" class="border-style">{{tabUserName}}</div>
+            <!-- 滑板显示内容 -->
+            <div class="border-style contentDialog">
+                <div v-for="(message,index) in messageDialog" :key="index">
+                    <div style="width: 100%;">
                         <span :style="{float: message.position, 'text-align': message.position}"
                               class="content">{{message.content}}</span>
-                    <div style="clear: both;"></div>
+                        <div style="clear: both;"></div>
+                    </div>
+
+                </div>
+            </div>
+            <!-- 输入的数据 -->
+            <div style="height: 200px;" class="border-style">
+                <div>
+                    <textarea v-model="message" class="textarea"></textarea>
+                </div>
+                <div>
+                    <div style="float: right;">
+                        <button style="width: 80px;height: 35px;border-width: 0px;" class="button"
+                                @click="sendMessage">发 送
+                        </button>
+                    </div>
                 </div>
 
             </div>
-        </div>
-        <!-- 输入的数据 -->
-        <div style="height: 200px;" class="border-style">
-            <div>
-                <textarea v-model="message" class="textarea"></textarea>
-            </div>
-            <div>
-                <div style="float: right;">
-                    <button style="width: 80px;height: 35px;border-width: 0px;" class="button"
-                            @click="sendMessage">发 送
-                    </button>
-                </div>
-            </div>
-
         </div>
     </div>
-</div>
 </div>
 </body>
 </html>
@@ -169,6 +169,14 @@
 
     .info {
         background-color: #67C23A;
+        color: white;
+    }
+    .success {
+        background-color: #409EFF;
+        color: white;
+    }
+    .error {
+        background-color: #F56C6C;
         color: white;
     }
 
@@ -287,17 +295,19 @@
                     alert("用户名称不能为空且名称不能为聊天室！")
                     return
                 }
-                let port = pathValue==="netty-websocket" ? 8900 : 8899
+                let port = pathValue === "netty-websocket" ? 8900 : 8899
 
-                if(pathValue==="stomp"){
-                    let socket = new WebSocket("ws://localhost:"+port+"/" + pathValue);
-                    stompConnect(usernameValue,socket)
+                if (pathValue === "stomp") {
+                    let socket = new WebSocket("ws://localhost:" + port + "/" + pathValue);
+                    stompConnect(usernameValue, socket)
                     return;
                 }
                 // 非Stomp方式执行以下代码
-                websocket = new WebSocket("ws://localhost:"+port+"/" + pathValue + "/" + usernameValue);
+                websocket = new WebSocket("ws://localhost:" + port + "/" + pathValue + "/" + usernameValue);
                 websocket.onopen = () => {
                     isReadonly.value = true
+                    alertMessages.value.unshift({type: "success", content: "您已经登录!"})
+                    clearMessage()
                     // 成功打开连接的时候，需要做的事情
                     let userMessageList = JSON.parse(sessionStorage.getItem("聊天室"))
                     if (!userMessageList) {
@@ -323,16 +333,18 @@
                 }
             }
 
-            function stompConnect(username,socket){
+            function stompConnect(loginName, socket) {
                 let headers = {
                     // 登录的用户名称
-                    'login': username,
+                    'login': loginName,
                     // 登录通行码
                     // 'passcode': 'mypasscode',
                 };
                 stompClient = Stomp.over(socket);
                 stompClient.connect(headers, function (frame) {
                     // 成功连接时
+                    alertMessages.value.unshift({type: "success", content: "您已经登录!"})
+                    clearMessage()
                     isReadonly.value = true
                     // 成功打开连接的时候，需要做的事情
                     let userMessageList = JSON.parse(sessionStorage.getItem("聊天室"))
@@ -340,18 +352,17 @@
                         userMessageList = []
                     }
                     messageDialog.value = userMessageList
+
                     // 订阅属于自己的主题，前缀为
-                    stompClient.subscribe('/sliver-gravel/'+username+"/notice", function (greeting) {
+                    stompClient.subscribe('/sliver-gravel/' + loginName + "/notice", function (greeting) {
                         console.log(greeting)
                         parseProtocol(greeting.body);
-                    },headers);
-
+                    }, headers);
                     stompClient.subscribe("/topic/notice", function (greeting) {
                         console.log(greeting)
                         parseProtocol(greeting.body);
                     });
-
-                },function (error){
+                }, function (error) {
                     // 连接关闭需要做的事情
                     users.value = users.value.filter(item => item.username === "聊天室")
                     resetData()
@@ -397,8 +408,11 @@
                     "type": 'message',
                     "data": data
                 }
-
-                websocket.send(JSON.stringify(chat))
+                if (stompClient !== null) {
+                    stompClient.send("/chat/message", {}, JSON.stringify(chat))
+                } else {
+                    websocket.send(JSON.stringify(chat));
+                }
                 messageDialog.value.push({content: message.value, position: "right"})
                 sessionStorage.setItem(toUser.value.username, JSON.stringify(messageDialog.value))
                 // 清除输出
@@ -441,19 +455,18 @@
                 // 自动刷新在线人员列表
                 if (chat.type === "online_state") {
                     let currentUsername = chat.data.username
+                    // 以下两段代码作为 Stomp的兼容，群发消息自身也会接收到，所以做个判断
+                    if (currentUsername === username.value) {
+                        return;
+                    }
                     // 如果在线在列表后面添加用户
                     if (chat.data.online) {
                         users.value.push({type: "private", username: currentUsername})
-                        // alertMessage.value.content = "用户：" + currentUsername + " 已上线"
-                        // alertMessage.value.type = "info"
-
                         alertMessages.value.unshift({type: "info", content: "用户：" + currentUsername + " 已上线"})
 
                     } else {
                         // 如果不在线更新用户状态或删除用户
                         users.value = users.value.filter(item => item.username !== currentUsername)
-                        // alertMessage.value.content = "用户：" + currentUsername + " 已下线"
-                        // alertMessage.value.type = "info"
                         alertMessages.value.unshift({type: "info", content: "用户：" + currentUsername + " 已下线"})
                         if (chat.data.username === tabUserName.value) {
                             resetData()
@@ -466,6 +479,10 @@
                 if (chat.type === "message") {
                     // 消息存储
                     let fromUser = chat.data.fromUser
+                    // 以下两段代码作为 Stomp的兼容，群发消息自身也会接收到，所以做个判断
+                    if (fromUser === username.value) {
+                        return;
+                    }
                     let messageType = chat.data.type
                     let key = messageType === "group" ? "聊天室" : fromUser
 
@@ -493,8 +510,6 @@
                     return
                 }
                 if (chat.type === "error_message") {
-                    // alertMessage.value.content = chat.data.errorMessage
-                    // alertMessage.value.type = "warn"
                     alertMessages.value.unshift({type: "warn", content: chat.data.errorMessage})
                     clearMessage()
                 }
@@ -504,13 +519,23 @@
              * 关闭 websocket
              */
             function exit() {
-                websocket.close();
+                if (stompClient !== null) {
+                    stompClient.disconnect(() => {
+                        // 连接关闭需要做的事情
+                        users.value = users.value.filter(item => item.username === "聊天室")
+                        resetData()
+                        isReadonly.value = false
+                        console.log('stomp连接关闭>>>');
+                    })
+                } else {
+                    websocket.close();
+                }
+                alertMessages.value.unshift({type: "warn", content: "您退出登录！"})
+                clearMessage()
             }
 
             function clearMessage() {
                 setTimeout(function () {
-                    alertMessage.value.type = 'none'
-                    alertMessage.value.content = ''
                     let length = alertMessages.value.length - 1;
                     if (alertMessages.value.length - 1 < 0) {
                         return

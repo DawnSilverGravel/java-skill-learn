@@ -9,6 +9,7 @@ import com.silvergravel.protocol.ChatProtocol;
 import com.silvergravel.util.MessageUtil;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
 import java.util.*;
@@ -20,6 +21,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author DawnStar
  * date: 2023/8/14
  */
+@Slf4j
 public class NettyWebsocketService {
 
 
@@ -42,6 +44,7 @@ public class NettyWebsocketService {
             try {
                 lastChannel.writeAndFlush(new TextWebSocketFrame(MAPPER.writeValueAsString(chatProtocol)));
                 lastChannel.close();
+                log.warn("netty：用户 {} 被挤下线",username);
                 sendOnlineState(contexts, username, false);
             } catch (JsonProcessingException e) {
                 throw new RuntimeException(e);
@@ -80,6 +83,8 @@ public class NettyWebsocketService {
      */
     private static void sendOnlineState(Collection<ChannelHandlerContext> contexts, String username, boolean online) {
         ChatProtocol<ChatProtocol.OnlineState> chatProtocol = MessageUtil.onlineStateProtocol(username, online);
+        String onlineState = online ? "上线" : "下线";
+        log.info("netty：用户 {} {}",username,onlineState);
         for (ChannelHandlerContext context : contexts) {
             try {
                 context.writeAndFlush(new TextWebSocketFrame(MAPPER.writeValueAsString(chatProtocol)));

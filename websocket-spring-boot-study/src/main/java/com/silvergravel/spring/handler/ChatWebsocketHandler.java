@@ -4,14 +4,13 @@ package com.silvergravel.spring.handler;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.silvergravel.protocol.ChatProtocol;
-import com.silvergravel.protocol.ProtocolTypeEnum;
 import com.silvergravel.util.MessageUtil;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.lang.NonNullApi;
 import org.springframework.web.socket.*;
 
 import java.io.IOException;
 import java.net.URI;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -21,6 +20,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author DawnStar
  * date: 2023/6/28
  */
+@Slf4j
 public class ChatWebsocketHandler implements WebSocketHandler {
 
 
@@ -54,10 +54,10 @@ public class ChatWebsocketHandler implements WebSocketHandler {
                 WebSocketMessage<String> message = new TextMessage(mapper.writeValueAsString(chatProtocol));
                 webSocketSession.sendMessage(message);
                 webSocketSession.close();
-                System.err.printf("当前用户: %s session id 为：%s 被挤下线 时间: %s\n", username, webSocketSession.getId(), DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").format(LocalDateTime.now()));
-                ;
+                log.warn("spring：用户 {} 被挤下线",username);
             }
             // 对所有用户发送上线通知
+            log.info("spring：用户 {} 上线",username);
             sendOnlineState(USERNAME_SESSION_MAP.values(), username, true);
             pushUserList(session, USERNAME_SESSION_MAP.keys());
             USERNAME_SESSION_MAP.put(username, session);
@@ -91,7 +91,7 @@ public class ChatWebsocketHandler implements WebSocketHandler {
         WebSocketSession remove = USERNAME_SESSION_MAP.remove(username);
         remove.close();
         sendOnlineState(USERNAME_SESSION_MAP.values(), username, false);
-        System.out.println("用户：" + username + " 下线");
+        log.info("spring：用户 {} 下线",username);
 
     }
 
