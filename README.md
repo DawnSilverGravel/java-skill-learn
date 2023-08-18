@@ -5,6 +5,8 @@
 - Springboot 集成 **MinIO**
 - Springboot 集成 **MQTT**
 - Spring Security
+- Springboot 集成 **Redis**
+- Springboot 集成 **Websocket** 四种方式
 
 ## 环境版本说明：
 - springboot2.7
