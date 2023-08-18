@@ -65,7 +65,9 @@ public class ChatInterceptor implements ChannelInterceptor {
             messageService.sendOffline(accessor.getSessionId(), accessor.getLogin(), channel);
             return;
         }
-        // 由于是异步的处理，所以订阅的时候，自己也会接受自己上线的消息，这里一般出现在第一个用户登录
+        // 发送上线信息的时候，自己也可能会接收到，所以前端做个兼容处理
+        // 接收到自己的消息就不做处理
+        // 原因可能是异步的原因
         if (StompCommand.CONNECT.equals(accessor.getCommand())) {
             String sessionId = accessor.getSessionId();
             String username = accessor.getLogin();

@@ -3,8 +3,10 @@
 <head>
     <meta charset="utf-8">
     <title>Websocket聊天室</title>
-    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="https://cdn.bootcdn.net/ajax/libs/stomp.js/2.3.3/stomp.js"></script>
+<!--    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>-->
+<!--    <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/3.3.4/vue.cjs.js"></script>-->
+    <script src="https://cdn.jsdelivr.net/npm/vue@3.3.4/dist/vue.global.min.js"></script>
 </head>
 <body>
 <div style="margin: 10px auto;height: 5px;"></div>
@@ -171,10 +173,12 @@
         background-color: #67C23A;
         color: white;
     }
+
     .success {
         background-color: #409EFF;
         color: white;
     }
+
     .error {
         background-color: #F56C6C;
         color: white;
@@ -289,10 +293,10 @@
             function connection() {
                 let pathValue = path.value
                 let usernameValue = username.value
-                let regex = /[0-9A-z\u4e00-\u9af5]{2,12}/
+                let regex = /^[0-9A-z\u4e00-\u9af5]{2,10}/
                 let flag = regex.test(usernameValue);
                 if (!flag || usernameValue === "聊天室") {
-                    alert("用户名称不能为空且名称不能为聊天室！")
+                    alert("用户名称只能为2位以上，10位以下的英文、数字、中文，且不能为聊天室！")
                     return
                 }
                 let port = pathValue === "netty-websocket" ? 8900 : 8899
@@ -519,7 +523,8 @@
              * 关闭 websocket
              */
             function exit() {
-                if (stompClient !== null) {
+                console.log(stompClient)
+                if (stompClient !== null && stompClient !== undefined) {
                     stompClient.disconnect(() => {
                         // 连接关闭需要做的事情
                         users.value = users.value.filter(item => item.username === "聊天室")

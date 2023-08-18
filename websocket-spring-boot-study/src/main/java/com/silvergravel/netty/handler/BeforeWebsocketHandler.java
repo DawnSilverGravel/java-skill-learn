@@ -31,7 +31,7 @@ public class BeforeWebsocketHandler extends ChannelInboundHandlerAdapter {
         // FullHttpRequest request = (FullHttpRequest) msg; // JDK8 强转
         if (msg instanceof FullHttpRequest request) {
             if (connection.equals(request.headers().get("Connection"))) {
-                String regex = "^[0-9A-z\u4e00-\u9af5]{1,10}";
+                String regex = "^[0-9A-z\\u4e00-\\u9af5]{2,10}";
                 String path = request.uri().replace(websocketPrefix + "/", "");
                 String username = URLDecoder.decode(path, StandardCharsets.UTF_8);
                 if (username.matches(regex)) {

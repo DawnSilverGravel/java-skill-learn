@@ -29,7 +29,7 @@ public class ChatHandshakeInterceptor implements HandshakeInterceptor {
     public boolean beforeHandshake(ServerHttpRequest request, ServerHttpResponse response, WebSocketHandler wsHandler, Map<String, Object> attributes) throws Exception {
         // 建立连接前，判断路径是否合法
         String path = request.getURI().getPath();
-        boolean matches = path.replace(websocketPrefix, "").matches("^/[0-9A-z\u4e00-\u9af5]{1,10}");
+        boolean matches = path.replace(websocketPrefix, "").matches("^/[0-9A-z\\u4e00-\\u9af5]{2,10}");
         if (matches) {
             return true;
         }

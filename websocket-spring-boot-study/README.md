@@ -19,3 +19,14 @@
 http://localhost:8899/index.html 为聊天室。
 
 http://localhost:8899/stomp.html 为官方的一个stomp的示例，稍微做了一下改动。
+
+如果index.html不能正常运行，则请使用以下其中一个路径加载vue
+```html
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/3.3.4/vue.cjs.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue@3.3.4/dist/vue.global.min.js"></script>
+```
+
+正常页面如下：
+
+![index.html](../images/websocket/img.png)
