@@ -13,6 +13,7 @@ import com.silvergravel.util.MessageUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.messaging.simp.annotation.SendToUser;
 import org.springframework.stereotype.Controller;
@@ -140,7 +141,7 @@ public class StompController {
      * @throws Exception
      */
     @MessageMapping("/hello")
-    @SendToUser("/topic/greetings")
+    @SendTo("/topic/greetings")
     public String greeting(String message) throws Exception {
         System.err.println(message);
         messagingTemplate.convertAndSend("/topic/greetings", message);
