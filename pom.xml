@@ -21,6 +21,8 @@
         <module>mqtt-spring-boot-study</module>
         <module>redis-spring-boot-study</module>
         <module>java-foundation</module>
+        <module>rocketmq-spring-boot-study</module>
+        <module>netty-study</module>
     </modules>
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
@@ -44,6 +46,11 @@
                 <version>${spring.cloud.alibaba.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>io.netty</groupId>
+                <artifactId>netty-all</artifactId>
+                <version>4.1.97.Final</version>
             </dependency>
             <dependency>
                 <groupId>org.projectlombok</groupId>

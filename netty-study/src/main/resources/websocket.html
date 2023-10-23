@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<div>
+    <div>
+        <label for="content"><input id="content" placeholder="输入内容"/></label>
+        <button type="button" onclick="connect()">连 接</button>
+        <button type="button" onclick="send()">发 送</button>
+    </div>
+    <div>
+        <span id="receive"></span>
+    </div>
+</div>
+<script>
+    let websocket = new WebSocket("ws://localhost:8096/websocket");
+    connect()
+
+    function connect() {
+        websocket.onopen = () => {
+            // 成功打开连接的时候，需要做的事情
+        }
+        websocket.onmessage = (result) => {
+            // 接收服务端消息
+            console.log(result.data)
+            document.getElementById("receive").innerText=result.data
+        }
+        websocket.onerror = (res) => {
+            // 接收错误的消息
+        }
+        websocket.onclose = (res) => {
+            // 连接关闭需要做的事情
+        }
+    }
+
+    function send() {
+        let content = document.getElementById("content")
+        websocket.send(content.value);
+    }
+</script>
+</body>
+</html>

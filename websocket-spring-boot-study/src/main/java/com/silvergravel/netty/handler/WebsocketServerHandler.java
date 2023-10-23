@@ -6,6 +6,7 @@ import com.silvergravel.netty.service.NettyWebsocketService;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
+import io.netty.handler.codec.http.websocketx.WebSocketServerProtocolHandler;
 import io.netty.util.concurrent.DefaultThreadFactory;
 
 import java.util.concurrent.ArrayBlockingQueue;
@@ -32,20 +33,29 @@ public class WebsocketServerHandler extends SimpleChannelInboundHandler<TextWebS
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
-        // 等待一会，推送列表消息
-        executorService.execute(() -> {
-            try {
-                TimeUnit.MILLISECONDS.sleep(200);
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
-            NettyWebsocketService.pushUserList(ctx);
-        });
+//        // 等待一会，推送列表消息,这里可能不稳定
+//        executorService.execute(() -> {
+//            try {
+//                TimeUnit.MILLISECONDS.sleep(200);
+//            } catch (InterruptedException e) {
+//                throw new RuntimeException(e);
+//            }
+//            NettyWebsocketService.pushUserList(ctx);
+//        });
     }
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
         NettyWebsocketService.removeUser(ctx);
         ctx.close();
+    }
+
+    @Override
+    public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
+        if (evt instanceof WebSocketServerProtocolHandler.HandshakeComplete) {
+            // 握手成功之后推送协议
+            NettyWebsocketService.pushUserList(ctx);
+        }
+
     }
 }

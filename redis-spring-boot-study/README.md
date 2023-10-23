@@ -15,7 +15,7 @@ docker run -itd \
     -p 6379:6379 \
     -v /blessing/redis/data:/data \
     -v /blessing/redis/conf/reids.conf:/etc/redis/redis.conf \
-    redis:7.0 redis-server /etc/redis/redis.conf \
+    redis:7.0 redis-idleServer /etc/redis/redis.conf \
     --requirepass "DawnSilverGravel" \
     --appendonly yes
 ```
