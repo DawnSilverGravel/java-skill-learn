@@ -13,6 +13,7 @@ import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.util.ReferenceCountUtil;
 
 import java.nio.charset.StandardCharsets;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author DawnStar
@@ -60,11 +61,7 @@ public class IdleClient {
             String s = new String(bytes, StandardCharsets.UTF_8);
             System.out.println(s);
 
-            for (int i = 0; i < 10; i++) {
-                byteBuf.writeBytes(("去年，平安无事。\n前年，平安无事。\n在那以前，也平安无事。"+i).getBytes(StandardCharsets.UTF_8));
-                byteBuf.retain();
-                ctx.writeAndFlush(byteBuf);
-            }
+
             ReferenceCountUtil.safeRelease(msg);
         }
 
@@ -87,10 +84,13 @@ public class IdleClient {
 
         @Override
         public void channelActive(ChannelHandlerContext ctx) throws Exception {
-            byte[] bytes = "客户端首次发送消息".getBytes(StandardCharsets.UTF_8);
-            ByteBuf buffer = Unpooled.buffer(bytes.length);
-            buffer.writeBytes(bytes);
-            ctx.writeAndFlush(buffer);
+            ByteBuf buffer = Unpooled.buffer();
+            for (int i = 0; i < 10; i++) {
+                buffer.writeBytes(("去年，平安无事。\n前年，平安无事。\n在那以前，也平安无事。"+i).getBytes(StandardCharsets.UTF_8));
+                buffer.retain();
+//                TimeUnit.SECONDS.sleep(i);
+                ctx.writeAndFlush(buffer);
+            }
         }
     }
 }

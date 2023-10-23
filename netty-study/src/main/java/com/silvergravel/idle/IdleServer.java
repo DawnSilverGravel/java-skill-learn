@@ -35,7 +35,7 @@ public class IdleServer {
                     @Override
                     protected void initChannel(SocketChannel socketChannel) throws Exception {
                         socketChannel.pipeline()
-                                .addLast(new IdleStateHandler(20, 20, 20))
+                                .addLast(new IdleStateHandler(10, 10, 10))
                                 .addLast(new ServerHandler());
                     }
                 });
@@ -65,8 +65,6 @@ public class IdleServer {
             String s = new String(bytes, StandardCharsets.UTF_8);
             System.out.println("接受到客户端的消息："+s);
             byteBuf.writeBytes("服务端传输过来信息".getBytes(StandardCharsets.UTF_8));
-            System.out.println(byteBuf.readerIndex());
-            TimeUnit.MILLISECONDS.sleep(1000);
             ctx.writeAndFlush(byteBuf);
         }
 
@@ -75,6 +73,7 @@ public class IdleServer {
             // 处理空闲事件
             if (evt instanceof IdleStateEvent event) {
                 if (event.state() == IdleState.READER_IDLE) {
+                    System.out.println("读空闲，关闭连接");
                     ctx.close();
                 }
             }
