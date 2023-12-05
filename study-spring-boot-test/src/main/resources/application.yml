@@ -1,0 +1,25 @@
+study:
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    username: DawnSilverGravel
+#    password: DawnSilverGravel
+    url: jdbc:postgresql://localhost:5432/gravel
+#    enable: false
+spring:
+
+  web:
+    resources:
+      chain:
+        enabled: true
+  main:
+    cloud-platform: none
+  data:
+    mongodb:
+      repositories:
+        type: none
+    redis:
+      repositories:
+        enabled: false
+    elasticsearch:
+      repositories:
+        enabled: false

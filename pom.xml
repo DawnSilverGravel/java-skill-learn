@@ -8,12 +8,12 @@
     <artifactId>java-skill-learn</artifactId>
     <version>1.0-SNAPSHOT</version>
     <packaging>pom</packaging>
-    <parent>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-starter-parent</artifactId>
-        <version>2.7.13</version>
-        <!--        <relativePath/> &lt;!&ndash; lookup parent from repository &ndash;&gt;-->
-    </parent>
+<!--    <parent>-->
+<!--        <groupId>org.springframework.boot</groupId>-->
+<!--        <artifactId>spring-boot-starter-parent</artifactId>-->
+<!--        <version>2.7.13</version>-->
+<!--        &lt;!&ndash;        <relativePath/> &lt;!&ndash; lookup parent from repository &ndash;&gt;&ndash;&gt;-->
+<!--    </parent>-->
     <modules>
         <module>minio-spring-boot-study</module>
         <module>security-spring-boot-study</module>
@@ -23,6 +23,10 @@
         <module>java-foundation</module>
         <module>rocketmq-spring-boot-study</module>
         <module>netty-study</module>
+        <module>study-spring-boot-starter</module>
+        <module>study-spring-boot-autoconfigure</module>
+        <module>study-spring-boot-test</module>
+        <module>study-enable-spring-boot-starter</module>
     </modules>
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
@@ -51,14 +55,34 @@
                 <groupId>io.netty</groupId>
                 <artifactId>netty-all</artifactId>
                 <version>4.1.97.Final</version>
+                <type>pom</type>
+                <scope>import</scope>
             </dependency>
             <dependency>
                 <groupId>org.projectlombok</groupId>
                 <artifactId>lombok</artifactId>
                 <version>1.18.26</version>
             </dependency>
+            <!-- https://mvnrepository.com/artifact/com.baomidou/mybatis-plus-boot-starter -->
+            <dependency>
+                <groupId>com.baomidou</groupId>
+                <artifactId>mybatis-plus-boot-starter</artifactId>
+                <version>3.5.4</version>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-dependencies</artifactId>
+                <version>2.7.13</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
         </dependencies>
     </dependencyManagement>
-
+    <distributionManagement>
+        <snapshotRepository>
+            <id>maven-snapshots</id>
+            <url>http://192.168.1.51:9010/repository/maven-snapshots</url>
+        </snapshotRepository>
+    </distributionManagement>
 
 </project>
