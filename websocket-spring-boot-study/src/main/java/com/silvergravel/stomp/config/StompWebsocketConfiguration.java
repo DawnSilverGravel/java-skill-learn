@@ -27,6 +27,7 @@ public class StompWebsocketConfiguration implements WebSocketMessageBrokerConfig
     @Override
     public void configureMessageBroker(MessageBrokerRegistry config) {
         config.setApplicationDestinationPrefixes("/chat");
+        // 目标前缀
         config.enableSimpleBroker("/topic","/sliver-gravel");
         config.setPreservePublishOrder(true);
         // 用户主题的前缀：默认是/user

@@ -99,6 +99,7 @@ public class SecurityConfiguration {
 
     /**
      * 指定前缀
+     * \@PreAuthorize("hasRole('USER')")
      */
     @Bean
     static GrantedAuthorityDefaults grantedAuthorityDefaults() {

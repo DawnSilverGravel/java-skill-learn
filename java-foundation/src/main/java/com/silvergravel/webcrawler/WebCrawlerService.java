@@ -257,12 +257,20 @@ public class WebCrawlerService {
                 logger.log(Level.INFO, "本次批量下载第 " + (i + 1) + " 张图片链接： " + downloadUrl + " 执行下载！");
                 URL url = new URL(downloadUrl);
                 FileOutputStream fileOutputStream = new FileOutputStream(path + "/" + imgName);
-                InputStream inputStream = url.openConnection().getInputStream();
-                fileOutputStream.write(inputStream.readAllBytes());
-                inputStream.close();
-                fileOutputStream.close();
-                logger.log(Level.INFO, imgName + " 下载成功！");
-                TimeUnit.MILLISECONDS.sleep(100);
+                try {
+                    InputStream inputStream = url.openConnection().getInputStream();
+
+                    fileOutputStream.write(inputStream.readAllBytes());
+                    inputStream.close();
+                    fileOutputStream.close();
+                    logger.log(Level.INFO, imgName + " 下载成功！");
+                    TimeUnit.MILLISECONDS.sleep(100);
+                } catch (IOException e) {
+                    System.out.println(e.getMessage());
+                    if (!e.getMessage().contains("code: 403 for URL")) {
+                        return false;
+                    }
+                }
             }
             return true;
         } catch (Exception e) {

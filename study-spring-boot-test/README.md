@@ -9,3 +9,6 @@
         <version>1.0-SNAPSHOT</version>
     </parent>
 ```
+## 链接
+
+[掘金 SpringBoot自动配置](https://juejin.cn/post/7308915787570331684)

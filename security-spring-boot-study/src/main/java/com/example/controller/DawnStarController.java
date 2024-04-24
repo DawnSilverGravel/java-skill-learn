@@ -32,7 +32,7 @@ public class DawnStarController {
     @GetMapping("/user")
     @PreAuthorize("hasRole('USER')")
     public String user() {
-        return "dawnStar SecurityFilterChain处理的资源,需要MY_PREFIX_USER权限";
+        return "dawnStar SecurityFilterChain处理的资源,需要DAWN_SILVER_GRAVEL_USER_USER权限";
     }
 
 }

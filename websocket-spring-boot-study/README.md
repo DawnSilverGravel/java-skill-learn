@@ -30,3 +30,7 @@ http://localhost:8899/stomp.html 为官方的一个stomp的示例，稍微做了
 正常页面如下：
 
 ![index.html](../images/websocket/img.png)
+
+## 链接
+
+[掘金 SpringBoot使用Websocket四种方式](https://juejin.cn/post/7268558840265408572)
