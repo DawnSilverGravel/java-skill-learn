@@ -1,0 +1,13 @@
+spring:
+  application:
+    name: event
+  liquibase:
+    enabled: true
+    database-change-log-lock-table: database_change_log_lock
+    database-change-log-table: database_change_log
+    change-log: classpath:db/changelog/changelog-master.xml
+  profiles:
+    include:
+      - datasource
+server:
+  port: 9008

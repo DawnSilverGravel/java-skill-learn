@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.29.xsd
+                    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+    <changeSet id="table_init" author="SilverGravel">
+        <sql>
+            -- auto-generated definition
+            create table  if not exists "order"
+            (
+                id          integer,
+                user_id     integer,
+                content     varchar(60),
+                create_time timestamp
+            );
+            comment on table "order" is '订单表';
+
+            comment on column "order".id is '订单ID';
+
+            comment on column "order".user_id is '用户ID';
+
+        comment on column "order".content is '订单内容';
+
+        comment on column "order".create_time is '创建时间';
+
+            alter table "order"
+                owner to postgres;
+
+-- auto-generated definition
+            create table if not exists user_point
+            (
+                id      integer,
+                user_id integer,
+                point   integer
+            );
+
+            comment on table user_point is '用户积分';
+
+            comment on column user_point.id is '积分ID';
+
+            comment on column user_point.user_id is '用户ID';
+
+            comment on column user_point.point is '积分';
+
+            alter table user_point
+                owner to postgres;
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

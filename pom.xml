@@ -11,7 +11,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>2.7.13</version>
+        <version>3.3.2</version>
         <!--        <relativePath/> &lt;!&ndash; lookup parent from repository &ndash;&gt;-->
     </parent>
     <modules>
@@ -28,6 +28,7 @@
         <module>study-spring-boot-test</module>
         <module>study-enable-spring-boot-starter</module>
         <module>aop-spring-boot-study</module>
+        <module>event-spring-boot-study</module>
     </modules>
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
@@ -35,6 +36,8 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <spring.cloud.alibaba.version>2021.0.4.0</spring.cloud.alibaba.version>
         <spring.cloud.version>2021.0.5</spring.cloud.version>
+        <liquibase.version>4.29.2</liquibase.version>
+
     </properties>
     <dependencyManagement>
         <dependencies>
@@ -63,6 +66,7 @@
                 <groupId>org.projectlombok</groupId>
                 <artifactId>lombok</artifactId>
                 <version>1.18.26</version>
+                <scope>provided</scope>
             </dependency>
             <!-- https://mvnrepository.com/artifact/com.h2database/h2 -->
             <dependency>
@@ -80,16 +84,21 @@
             <dependency>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-dependencies</artifactId>
-                <version>2.7.13</version>
+                <version>3.3.2</version>
                 <type>pom</type>
                 <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.liquibase</groupId>
+                <artifactId>liquibase-core</artifactId>
+                <version>${liquibase.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
     <distributionManagement>
         <snapshotRepository>
             <id>maven-snapshots</id>
-            <url>http://192.168.1.51:9010/repository/maven-snapshots</url>
+            <url>http://192.168.137.244:9010/repository/maven-snapshots</url>
         </snapshotRepository>
     </distributionManagement>
 

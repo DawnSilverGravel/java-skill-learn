@@ -3,13 +3,13 @@ package com.silvergravel.study;
 import com.silvergravel.study.dto.AuthorityDTO;
 import com.silvergravel.study.service.PerformanceService;
 import com.silvergravel.study.service.impl.OrderService;
+import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 
-import javax.annotation.Resource;
 import java.util.List;
 
 /**
