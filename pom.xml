@@ -29,6 +29,7 @@
         <module>study-enable-spring-boot-starter</module>
         <module>aop-spring-boot-study</module>
         <module>event-spring-boot-study</module>
+        <module>schedule-spring-boot-study</module>
     </modules>
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
